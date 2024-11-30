@@ -1,0 +1,83 @@
+.App {
+  margin: 0;
+  /* Remove default margin */
+  min-height: 100vh; /* Ensure the App takes up at least the full viewport height */
+  display: flex;
+  flex-direction: column; /* Make it a column layout */
+}
+
+main {
+  flex-grow: 1; /* Allow the main content to grow and take up remaining space */
+}
+
+
+
+.about {
+  text-align: center;
+}
+
+.depsimages {
+  mask-image: linear-gradient(to bottom, rgb(18, 16, 16) 80%, rgba(42, 38, 38, 0));
+}
+
+.menuTxt {
+  text-align: center;
+}
+
+.map-container {
+  width: 100%;
+  height: 100%;
+}
+
+.footertxt {
+  text-align: center;
+}
+
+.mpname {
+  text-align: center;
+}
+
+.mmvtext {
+  text-align: center;
+}
+
+.txtalign {
+  text-align: center;
+}
+
+.underline-motion {
+  position: relative;
+  display: inline-block;
+  transition: transform 5s;
+}
+
+.underline-motion::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 50%;
+  width: 50%;
+  height: 2px;
+  background-color: green;
+  transition: transform 5s;
+  transform-origin: right;
+}
+
+.underline-motion:hover::after {
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.itms {
+  display: flex !important;
+  flex-direction: col !important;
+}
+
+.footer {
+  background-color: #f8f8f8;
+  width: 100%;
+  text-align: center;
+  padding: 20px 0;
+  position: relative;
+  bottom: 0;
+}
