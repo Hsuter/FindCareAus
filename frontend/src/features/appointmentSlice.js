@@ -2,6 +2,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { url, setHeaders } from "./api";
+import { toast } from "react-toastify";
 
 export const bookAppointment = createAsyncThunk(
   "appointments/bookAppointment",
@@ -27,13 +28,29 @@ export const fetchAppointments = createAsyncThunk(
       const userId = auth._id;
 
       const response = await axios.get(
-        `http://localhost:8000/api/appointments?userId=${userId}`
+        `${url}api/appointments?userId=${userId}`
       );
       return response.data;
     } catch (error) {
       console.error("Fetch Appointments Error:", error.response || error);
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch appointments"
+      );
+    }
+  }
+);
+
+export const cancelAppointment = createAsyncThunk(
+  "appointments/cancelAppointment",
+  async (appointmentId, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(
+        `${url}api/appointments/${appointmentId}`
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response.data || "Failed to cancel appointment"
       );
     }
   }
@@ -65,6 +82,15 @@ const appointmentSlice = createSlice({
       .addCase(fetchAppointments.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload || "Failed to fetch appointments";
+      })
+      .addCase(cancelAppointment.fulfilled, (state, action) => {
+        toast.error("Appointment cancelled!");
+        state.appointments = state.appointments.filter(
+          (appointment) => appointment._id !== action.payload._id
+        );
+      })
+      .addCase(cancelAppointment.rejected, (state, action) => {
+        state.error = action.payload || "Failed to cancel appointment";
       });
   },
 });

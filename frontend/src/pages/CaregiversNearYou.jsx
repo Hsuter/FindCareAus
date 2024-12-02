@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { calculateDistance } from "../utils"; // Haversine formula function
-import Map from "./Map"; // Map component for Google Maps integration
+import debounce from "lodash.debounce";
+import { calculateDistance } from "../utils";
+import Map from "./Map";
 import { useNavigate } from "react-router-dom";
-import { fetchCaregivers } from "../features/caregiverSlice.js"; // Fetch function
+import { fetchCaregivers } from "../features/caregiverSlice.js";
 import { useSelector, useDispatch } from "react-redux";
-import mongoose from "mongoose";
 
 const DEFAULT_LOCATION = { latitude: -25.2744, longitude: 133.7751 };
 
 function CaregiversNearYou() {
   const [userLocation, setUserLocation] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(12);
+  const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
     gender: "",
     experience: "",
@@ -18,16 +19,20 @@ function CaregiversNearYou() {
     sortBy: "distance",
   });
 
-  const caregivers = useSelector((state) => state.caregivers.list); // Fetch caregivers from Redux store
+  const caregivers = useSelector((state) => state.caregivers.list);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Fetch caregivers from backend when component loads
-    dispatch(fetchCaregivers());
-  }, [dispatch]);
+  // Fetch caregivers with debounced search
+  const debouncedFetch = debounce((term) => {
+    dispatch(fetchCaregivers(term));
+  }, 500);
 
-  // Get user's location or use default
+  useEffect(() => {
+    debouncedFetch(searchTerm);
+    return debouncedFetch.cancel;
+  }, [searchTerm]);
+
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -35,8 +40,8 @@ function CaregiversNearYou() {
         setUserLocation({ latitude, longitude });
         setZoomLevel(10);
       },
-      (error) => {
-        console.error("Location access denied. Using default location.");
+      () => {
+        console.warn("Geolocation not available. Using default location.");
         setUserLocation(DEFAULT_LOCATION);
         setZoomLevel(10);
       },
@@ -44,7 +49,6 @@ function CaregiversNearYou() {
     );
   }, []);
 
-  // Calculate distances for caregivers
   const caregiversWithDistance = caregivers.map((caregiver) => ({
     ...caregiver,
     distance: calculateDistance(
@@ -55,7 +59,6 @@ function CaregiversNearYou() {
     ),
   }));
 
-  // Apply filters
   const filteredCaregivers = caregiversWithDistance
     .filter((caregiver) => {
       if (filters.gender && caregiver.gender?.toLowerCase() !== filters.gender)
@@ -97,6 +100,13 @@ function CaregiversNearYou() {
         />
       </div>
       <div className="mb-6 flex flex-wrap gap-4">
+        <input
+          type="text"
+          placeholder="Search by name"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="p-2 border rounded"
+        />
         <select
           name="gender"
           value={filters.gender}
@@ -146,7 +156,6 @@ function CaregiversNearYou() {
               alt={caregiver.name}
               className="w-50 h-48 object-cover rounded-md mb-4"
             />
-            <p>{caregiver.id}</p>
             <h3 className="text-xl font-semibold">{caregiver.name}</h3>
             <p className="text-gray-600">Specialty: {caregiver.specialty}</p>
             <p className="text-gray-600">Rating: ⭐{caregiver.rating}</p>

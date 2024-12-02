@@ -101,4 +101,21 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch appointments" });
   }
 });
+
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deletedAppointment = await Appointment.findByIdAndDelete(id);
+
+    if (!deletedAppointment) {
+      return res.status(404).json({ error: "Appointment not found" });
+    }
+
+    res.status(200).json(deletedAppointment);
+  } catch (error) {
+    console.error("Error canceling appointment:", error);
+    res.status(500).json({ error: "Failed to cancel appointment" });
+  }
+});
 module.exports = router;

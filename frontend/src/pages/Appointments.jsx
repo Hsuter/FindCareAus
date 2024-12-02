@@ -1,6 +1,9 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAppointments } from "../features/appointmentSlice";
+import {
+  fetchAppointments,
+  cancelAppointment,
+} from "../features/appointmentSlice";
 
 const Appointments = () => {
   const dispatch = useDispatch();
@@ -10,20 +13,16 @@ const Appointments = () => {
   const auth = useSelector((state) => state.auth);
 
   useEffect(() => {
-    console.log("Running useEffect with auth.token:", auth.token);
     if (auth.token) {
-      localStorage.removeItem("appointments");
-      const storedAppointments = JSON.parse(
-        localStorage.getItem("appointments")
-      );
-      if (storedAppointments) {
-        dispatch({ type: "appointments/hydrate", payload: storedAppointments });
-      } else {
-        console.log("Dispatching fetchAppointments...");
-        dispatch(fetchAppointments());
-      }
+      dispatch(fetchAppointments());
     }
   }, [dispatch, auth.token]);
+
+  const handleCancel = (appointmentId) => {
+    if (window.confirm("Are you sure you want to cancel this appointment?")) {
+      dispatch(cancelAppointment(appointmentId));
+    }
+  };
 
   return (
     <div>
@@ -53,6 +52,12 @@ const Appointments = () => {
               <p>
                 <strong>Status:</strong> {appointment.status}
               </p>
+              <button
+                onClick={() => handleCancel(appointment._id)}
+                className="mt-2 px-4 py-2 bg-darkgreen text-white rounded hover:bg-red-600"
+              >
+                Cancel Appointment
+              </button>
             </li>
           ))}
         </ul>

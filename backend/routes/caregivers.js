@@ -3,10 +3,20 @@ const mongoose = require("mongoose");
 const router = express.Router();
 const Caregiver = require("../models/Caregiver");
 
-// GET all caregivers
+// GET all caregivers with optional search
 router.get("/", async (req, res) => {
+  const { search } = req.query;
+
   try {
-    const caregivers = await Caregiver.find();
+    let caregivers;
+
+    if (search) {
+      const searchRegex = new RegExp(search, "i"); // Case-insensitive regex
+      caregivers = await Caregiver.find({ name: searchRegex });
+    } else {
+      caregivers = await Caregiver.find();
+    }
+
     res.json(caregivers);
   } catch (error) {
     res.status(500).json({ message: "Error fetching caregivers" });

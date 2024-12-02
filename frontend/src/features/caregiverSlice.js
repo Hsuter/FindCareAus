@@ -4,9 +4,13 @@ import { url, setHeaders } from "./api";
 
 export const fetchCaregivers = createAsyncThunk(
   "caregivers/fetchCaregivers",
-  async (_, { rejectWithValue }) => {
+  async (searchTerm = "", { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${url}api/caregivers`, setHeaders());
+      console.log("Search term:", searchTerm); // Debugging
+      const response = await axios.get(
+        `${url}api/caregivers?search=${encodeURIComponent(searchTerm)}`,
+        setHeaders()
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
